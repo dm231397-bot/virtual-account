@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
   res.send('Virtual Account API is running 🚀');
 });
 
-// Create virtual account
+// Create virtual account (using Paystack's recommended business flow)
 app.post('/create-va', async (req, res) => {
   const { name, email, preferred_bank } = req.body;
 
@@ -23,6 +23,7 @@ app.post('/create-va', async (req, res) => {
   }
 
   try {
+    // Paystack Dedicated Account API
     const response = await axios.post(
       'https://api.paystack.co/dedicated_account',
       {
@@ -44,8 +45,13 @@ app.post('/create-va', async (req, res) => {
     const va = response.data.data;
     res.json({ message: 'Virtual Account created successfully', va });
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: 'Failed to create virtual account', details: err.response?.data });
+    console.error('Paystack error:', err.response?.data || err.message);
+
+    // Fallback response to help debugging
+    res.status(500).json({
+      error: 'Failed to create virtual account',
+      details: err.response?.data || err.message
+    });
   }
 });
 
